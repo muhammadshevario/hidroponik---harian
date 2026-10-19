@@ -1,0 +1,8 @@
+{
+  "appId": "id.tim.hidroponikharian",
+  "appName": "Hidroponik Harian",
+  "webDir": "public",
+  "server": {
+    "androidScheme": "https"
+  }
+}

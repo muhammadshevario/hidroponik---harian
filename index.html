@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#174d35" />
+  <title>Hidroponik Harian — Logbook Tim</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-mark">🌱</div>
+    <div class="brand-copy">
+      <div class="eyebrow">LOGBOOK TIM</div>
+      <h1>Hidroponik Harian</h1>
+    </div>
+    <div id="connectionBadge" class="status-pill pending">Memeriksa koneksi…</div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div>
+        <p class="eyebrow light">PANTAU • CATAT • TUMBUHKAN</p>
+        <h2>Data tanaman, satu sumber untuk semua.</h2>
+        <p class="hero-copy">Catat kondisi harian dan bagikan perkembangan tanaman ke seluruh anggota tim.</p>
+      </div>
+      <div class="hero-plant" aria-hidden="true">🪴</div>
+    </section>
+
+    <section class="stats-grid" aria-label="Ringkasan">
+      <article class="stat-card"><span>Total laporan</span><strong id="totalReports">—</strong><small>tersimpan di database</small></article>
+      <article class="stat-card"><span>Rata-rata pH</span><strong id="avgPh">—</strong><small>dari laporan terisi</small></article>
+      <article class="stat-card"><span>Rata-rata PPM</span><strong id="avgPpm">—</strong><small>dari laporan terisi</small></article>
+      <article class="stat-card"><span>Laporan terbaru</span><strong id="latestDate">—</strong><small id="latestAuthor">Belum ada laporan</small></article>
+    </section>
+
+    <section class="layout-grid">
+      <section class="panel form-panel">
+        <div class="section-heading">
+          <div><p class="eyebrow">INPUT DATA</p><h2>Buat laporan harian</h2></div>
+          <span class="step-tag">01 / CATAT</span>
+        </div>
+        <div id="setupNotice" class="notice warning hidden">
+          <strong>Firebase belum dikonfigurasi.</strong>
+          Isi konfigurasi di <code>public/firebase-config.js</code> sesuai langkah di README agar laporan tersimpan dan terbagi antar-HP.
+        </div>
+        <form id="reportForm">
+          <div class="field-grid">
+            <label>Nama anggota pelapor<input id="author" name="author" maxlength="80" placeholder="Contoh: Rio" required /></label>
+            <label>Tanggal laporan<input id="reportDate" name="reportDate" type="date" required /></label>
+            <label>Nama tanaman / bedeng<input id="plant" name="plant" maxlength="100" placeholder="Contoh: Pakcoy — Rak A" required /></label>
+            <label>Hari setelah tanam (HST)<input id="hst" name="hst" type="number" min="0" max="999" placeholder="Contoh: 14" /></label>
+            <label>pH larutan<input id="ph" name="ph" type="number" min="0" max="14" step="0.1" placeholder="Contoh: 6.0" /></label>
+            <label>PPM larutan<input id="ppm" name="ppm" type="number" min="0" max="10000" step="1" placeholder="Contoh: 1180" /></label>
+            <label>Tinggi tanaman (cm)<input id="height" name="height" type="number" min="0" max="500" step="0.1" placeholder="Contoh: 12.5" /></label>
+            <label>Kondisi tanaman<select id="condition" name="condition"><option value="Baik">Baik</option><option value="Perlu dipantau">Perlu dipantau</option><option value="Bermasalah">Bermasalah</option></select></label>
+          </div>
+          <label>Catatan harian<textarea id="notes" name="notes" rows="4" maxlength="3000" placeholder="Warna daun, akar, hama, perubahan nutrisi, tindakan hari ini…"></textarea></label>
+          <label class="upload-field">Foto kondisi tanaman <span class="optional">opsional, maks. 5 MB</span><input id="photo" name="photo" type="file" accept="image/*" /><span class="upload-hint">Foto akan diunggah ke Firebase Storage jika sudah diaktifkan.</span></label>
+          <div id="photoPreview" class="photo-preview hidden"></div>
+          <button id="submitButton" class="button primary" type="submit">Simpan laporan <span>↗</span></button>
+          <p class="form-footnote">Jangan masukkan data pribadi sensitif. Pastikan laporan berhasil tersimpan sebelum menutup halaman.</p>
+          <div id="formMessage" class="form-message" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <section class="right-column">
+        <section class="panel chart-panel">
+          <div class="section-heading">
+            <div><p class="eyebrow">TREN PERTUMBUHAN</p><h2>Grafik tinggi tanaman</h2></div>
+            <span class="step-tag">02 / PANTAU</span>
+          </div>
+          <p class="muted">Grafik berdasarkan laporan yang memiliki nilai tinggi tanaman.</p>
+          <div class="chart-wrap"><canvas id="growthChart" aria-label="Grafik tinggi tanaman" role="img"></canvas><div id="chartEmpty" class="empty-state">Belum ada data tinggi tanaman untuk digrafikkan.</div></div>
+          <div class="chart-legend"><span><i class="legend-dot"></i> Tinggi (cm)</span><span id="chartCount">0 titik data</span></div>
+        </section>
+
+        <section class="panel history-panel">
+          <div class="section-heading history-heading">
+            <div><p class="eyebrow">ARSIP TIM</p><h2>Riwayat laporan</h2></div>
+            <span class="step-tag">03 / TINJAU</span>
+          </div>
+          <div class="filters">
+            <input id="searchInput" type="search" placeholder="Cari nama tanaman / anggota…" aria-label="Cari laporan" />
+            <select id="conditionFilter" aria-label="Filter kondisi"><option value="">Semua kondisi</option><option>Baik</option><option>Perlu dipantau</option><option>Bermasalah</option></select>
+          </div>
+          <div id="reportsList" class="reports-list"><div class="empty-state">Mengambil data laporan…</div></div>
+        </section>
+      </section>
+    </section>
+    <footer><span>Hidroponik Harian</span><span>Logbook bersama tim • Data sinkron lewat Firebase</span></footer>
+  </main>
+
+  <dialog id="detailDialog" class="detail-dialog">
+    <div class="dialog-head"><div><p class="eyebrow">DETAIL LAPORAN</p><h2 id="detailTitle">Laporan</h2></div><button id="closeDialog" class="icon-button" aria-label="Tutup">✕</button></div>
+    <div id="detailBody" class="detail-body"></div>
+  </dialog>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
